@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import Home from '@/views/Home.vue'
+import Topic from '@/views/topic.vue'
 
 import NotFound from '@/components/NotFound.vue'
 
@@ -12,10 +13,19 @@ const routes = [
     path: '*',
     name: 'NotFound',
     component: NotFound,
-  }, {
+  }, 
+  {
     path: '/',
     name: 'home',
     component: Home,
+    meta: {
+      auth: false,
+    },
+  },
+  {
+    path: '/topic/:id',
+    name: 'Topic',
+    component: Topic,
     meta: {
       auth: false,
     },

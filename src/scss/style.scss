@@ -1,2 +1,9 @@
 @import 'utilities/variables';
 @import 'node_modules/bootstrap/scss/bootstrap.scss';
+
+.cursor-pointer{
+    cursor: pointer;
+}
+body{
+    background-color: #ecf1f5;
+}
