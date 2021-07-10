@@ -15,12 +15,18 @@
               :active="index == activeIndex"
               :topic="topic"
               :key="topic.id"
+              @click="changeIndex(index)"
             />
           </VueSlickCarousel>
         </div>
         <div class="col-md-3">
           <div class="float-right">
-            <b-card class="addTopic" title="Add Topic"> </b-card>
+            <b-card
+              v-b-modal.modal-1
+              class="cursor-pointer addTopic"
+              title="Add Topic"
+            >
+            </b-card>
           </div>
         </div>
       </div>
@@ -34,14 +40,19 @@
               :dots="false"
             >
               <SubTopicCard
-                v-for="(topic, index) of topicList"
+                v-for="(topic, index) of subTopicList"
                 :active="index == activeIndex"
                 :topic="topic"
                 :key="topic.id"
               />
             </VueSlickCarousel>
             <div class="">
-              <b-card class="addTopic addSubTopic" title="Add Topic"> </b-card>
+              <b-card
+                v-b-modal.modal-1
+                class="addTopic addSubTopic"
+                title="Add Topic"
+              >
+              </b-card>
             </div>
           </div>
           <div class="col-md-9">
@@ -91,7 +102,7 @@
                 <h3 class="title">Visual 1</h3>
                 <b-card>
                   <b-card-text>
-                    <img src="@/assets/img/folder.svg">
+                    <img src="@/assets/img/folder.svg" />
                   </b-card-text>
                 </b-card>
               </div>
@@ -99,7 +110,7 @@
                 <h3 class="title">Visual 2</h3>
                 <b-card>
                   <b-card-text>
-                    <img src="@/assets/img/folder.svg">
+                    <img src="@/assets/img/folder.svg" />
                   </b-card-text>
                 </b-card>
               </div>
@@ -107,7 +118,7 @@
                 <h3 class="title"></h3>
                 <b-card>
                   <b-card-text>
-                    <img src="@/assets/img/folder.svg">
+                    <img src="@/assets/img/folder.svg" />
                   </b-card-text>
                 </b-card>
               </div>
@@ -115,13 +126,91 @@
             <div class="sub-topic-content mt-5">
               <h4 class="title">Use your data</h4>
               <b-card>
-                <b-card-text>Lorem Ipsum is simply dummy text of the printing and typesetting industry. From lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make.</b-card-text>
+                <b-card-text
+                  >Lorem Ipsum is simply dummy text of the printing and
+                  typesetting industry. From lorem Ipsum has been the industry's
+                  standard dummy text ever since the 1500s, when an unknown
+                  printer took a galley of type and scrambled it to
+                  make.</b-card-text
+                >
               </b-card>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <b-modal
+      id="modal-1"
+      ref="createTopicModal"
+      hide-footer
+      title="Create Topic"
+    >
+      <div>
+        <div>
+          <b-form-group id="fieldset-1" label="Enter Title">
+            <b-form-input id="input-1" v-model="topic.name" trim></b-form-input>
+          </b-form-group>
+        </div>
+        <div>
+          <b-form-group id="fieldset-1" label="Type">
+            <b-form-select v-model="topic.type">
+              <template #first>
+                <b-form-select-option :value="null" disabled
+                  >-- Topic Type --</b-form-select-option
+                >
+              </template>
+              <b-form-select-option
+                :key="index"
+                v-for="(type, index) in typeList"
+                :value="type.value"
+                >{{ type.label }}</b-form-select-option
+              >
+            </b-form-select>
+          </b-form-group>
+        </div>
+        <div>
+          <b-form-group id="fieldset-1" label="Parent">
+            <b-form-select v-model="topic.parent">
+              <template #first>
+                <b-form-select-option :value="null" disabled
+                  >-- Parent --</b-form-select-option
+                >
+              </template>
+              <b-form-select-option
+                :key="index"
+                v-for="(type, index) in topicList"
+                :value="type.id"
+                >{{ type.name }}</b-form-select-option
+              >
+            </b-form-select>
+          </b-form-group>
+        </div>
+        <b-form-checkbox
+          id="checkbox-1"
+          v-model="topic.private"
+          name="checkbox-1"
+        >
+          Private
+        </b-form-checkbox>
+        <b-button class="mt-3" block variant="success" @click="saveTopic()"
+          >Save</b-button
+        >
+      </div>
+    </b-modal>
+    <b-modal id="modal-2" title="Create Sub Topic">
+      <div>
+        <div>
+          <b-form-group id="fieldset-1" label="Enter Title">
+            <b-form-input
+              id="input-1"
+              v-model="subtopic.title"
+              trim
+            ></b-form-input>
+          </b-form-group>
+        </div>
+        <b-button variant="success" @click="saveTopic()">Save</b-button>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -131,6 +220,7 @@ import TopicCard from "../components/topic/topic.vue";
 import SubTopicCard from "../components/subtopic/subtopic.vue";
 import VueSlickCarousel from "vue-slick-carousel";
 import "vue-slick-carousel/dist/vue-slick-carousel.css";
+import axios from "axios";
 
 export default {
   name: "Home",
@@ -138,12 +228,33 @@ export default {
   data() {
     return {
       activeIndex: 0,
+      topic: {
+        name: "",
+        type: null,
+        parent: null,
+        private: false,
+      },
+      subtopic: {
+        name: "",
+        type: null,
+        parent: null,
+        private: false,
+      },
+      typeList: [
+        { label: "Diary", value: "diary" },
+        { label: "Literary Novel", value: "literary_novel" },
+        { label: "Course", value: "course" },
+        { label: "Campaign", value: "campaign" },
+        { label: "General Topic", value: "General_topic" },
+        { label: "Faq Topic", value: "faq_topic" },
+        { label: "Customer Hierarchy", value: "customer_hierarchy" },
+      ],
       topicList: [
-        { id: 1, name: "Successful Posibilities", public: true },
-        { id: 2, name: "Successful Posibilities", public: false },
-        { id: 3, name: "Successful Posibilities", public: true },
-        { id: 4, name: "Successful Posibilities", public: true },
-        { id: 5, name: "Successful Posibilities", public: true },
+        // { id: 1, name: "Successful Posibilities", public: true },
+        // { id: 2, name: "Successful Posibilities", public: false },
+        // { id: 3, name: "Successful Posibilities", public: true },
+        // { id: 4, name: "Successful Posibilities", public: true },
+        // { id: 5, name: "Successful Posibilities", public: true },
       ],
       subTopicContent: [
         {
@@ -180,6 +291,34 @@ Ipsum has been the industry's standard dummy text ever since the 1500s, text whe
         slidesToScroll: 1,
       };
     },
+    subTopicList(){
+      if(this.topicList[this.activeIndex]){
+        return this.topicList[this.activeIndex]?.subtopics
+      }else{
+        return []
+      }
+    }
+  },
+  mounted() {
+    this.getTopicList();
+  },
+  methods: {
+    getTopicList() {
+      axios.get("/topics/").then((res) => {
+        console.log(res.data);
+        this.topicList = res.data;
+      });
+    },
+    saveTopic() {
+      axios.post("/topics/", this.topic).then(() => {
+        this.$refs["createTopicModal"].hide();
+        this.getTopicList();
+      });
+    },
+    changeIndex(index){
+      debugger
+      this.activeIndex=index
+    }
   },
 };
 </script>
@@ -209,27 +348,27 @@ Ipsum has been the industry's standard dummy text ever since the 1500s, text whe
       line-height: 32px;
     }
   }
-  .files-card{
+  .files-card {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-end;
-    .file-item{
+    .file-item {
       // margin-left: 20px;
       // &:first-child{
       //   margin-left: 0;
       // }
-      .title{
+      .title {
         font-size: 20px;
       }
-      .card{
+      .card {
         width: 160px;
         height: 150px;
-        .card-body{
+        .card-body {
           display: flex;
           align-items: center;
           justify-content: center;
-          .card-title{
+          .card-title {
             margin: 0 !important;
             color: #999;
           }

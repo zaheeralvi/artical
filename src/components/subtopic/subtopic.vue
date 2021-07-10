@@ -1,6 +1,6 @@
 <template>
   <div class="topic">
-    <b-card :class="active?'selected':''" :title="topic.name+' '+topic.id" tag="topic">
+    <b-card :class="active?'selected':''" :title="topic.name" tag="topic">
       <b-card-text>
         <img class="icon bottomRight" src="@/assets/img/tree.svg" /></b-card-text>
       <b-card-text>

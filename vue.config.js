@@ -3,6 +3,7 @@ const path = require("path");
 
 module.exports = {
   devServer: {
+    proxy: 'http://18.222.182.210',
     port: "8080",
   },
   runtimeCompiler: true,
