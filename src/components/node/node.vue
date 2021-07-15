@@ -1,22 +1,23 @@
 <template>
-  <div class="topic">
-    <b-card :class="active?'selected':''" :title="topic.name" tag="topic">
+  <div class="node">
+    <b-card :title="topic.name" tag="node">
       <b-card-text>
-        <img v-if='topic.private' class="icon topRight" src="@/assets/img/private.svg" />
-        <img v-else class="icon topRight" src="@/assets/img/public.svg" />
-        <img @click="$router.push(`topic/${topic.id}`)" class="icon bottomRight cursor-pointer" src="@/assets/img/tree.svg" />
+        <img class="icon topRight" src="@/assets/img/pin.svg" />
+        <img class="icon bottomRight" src="@/assets/img/create.svg" />
+        <img class="icon bottomLeft" src="@/assets/img/zoomIn.svg" />
+        <img class="icon topLeft" src="@/assets/img/arrowUp.svg" />
       </b-card-text>
     </b-card>
   </div>
 </template>
 <script>
 export default {
-  name:'TopicCard',
+  name:'NodeCard',
   props:['topic','active'],
 }
 </script>
 <style lang="scss" scoped>
-.topic {
+.node {
   position: relative;
   .card {
     &.selected{

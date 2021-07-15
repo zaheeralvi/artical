@@ -38,7 +38,7 @@
             @click="nodeChange(node)"
             :class="collapsed ? 'collapsed-node node' : 'node'"
           >
-            <SubTopicCard :topic="node" />
+            <Node :topic="node" />
           </div>
         </template>
       </vue-tree>
@@ -47,15 +47,17 @@
 </template>
 <script>
 import Banner from "../components/banner/banner.vue";
-import SubTopicCard from "../components/subtopic/subtopic.vue";
+import Node from "../components/node/node.vue";
+import axios from "axios";
 
 export default {
   name: "Home",
-  components: { Banner, SubTopicCard },
+  components: { Banner, Node },
   data() {
     return {
       updater: 1212,
       sliderLength: 0,
+      topicId: 0,
       rootNode: {},
       nodes: [],
       rowsChildren: {},
@@ -99,9 +101,19 @@ export default {
     };
   },
   mounted() {
-    this.setData();
+    this.topicId = this.$route.params.id
+    if(this.topicId){
+      this.getTopicData();
+    }
   },
   methods: {
+    getTopicData() {
+      axios.get(`/topics/${this.topicId}`).then((res) => {
+        console.log(res);
+        this.nodeData = res.data;
+        this.setData();
+      });
+    },
     async setData() {
       await this.nodeFormater(this.nodeData, "0");
       this.showTree();
@@ -109,8 +121,9 @@ export default {
     async nodeFormater(node, key) {
       let arr = key.split("-");
       this.nodes.push({ id: node.id, name: node.name, key: key });
-      if (node.children) {
-        node?.children?.forEach((n, i) => this.nodeFormater(n, `${key}-${i}`));
+      if (node.subtopics) {
+        node.children = node.subtopics
+        node.children.forEach((n, i) => this.nodeFormater(n, `${key}-${i}`));
       }
     },
     showTree() {
@@ -119,12 +132,14 @@ export default {
     },
     nodeChange(node) {
       let keysArr = node.key.split("-");
-      this.sliderLength = keysArr.length;
       // find child nodes
       let children = this.nodes.filter(
         (n) =>
           n.key.includes(`${node.key}-`) && n.key.length == node.key.length + 2
       );
+      if(children?.length){
+        this.sliderLength = keysArr.length;
+      }
 
       if (node.key == "0") {
         this.rowsChildren = {
@@ -163,10 +178,10 @@ export default {
     changeSlide(index, type) {
       if (this.rowsChildren[index + 1].children.length > 4) {
         let activeIndex = this.rowsChildren[index + 1].active;
-        if(type == "right"){
-          activeIndex = parseInt(activeIndex) + 1
-        }else{
-          activeIndex = parseInt(activeIndex) - 1
+        if (type == "right") {
+          activeIndex = parseInt(activeIndex) + 1;
+        } else {
+          activeIndex = parseInt(activeIndex) - 1;
         }
         this.rowsChildren[index + 1].croppedChildren = this.rowsChildren[
           index + 1

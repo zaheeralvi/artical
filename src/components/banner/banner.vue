@@ -2,28 +2,52 @@
   <div class="banner">
     <h2 class="title">Search what you desire</h2>
     <div class="search-box">
-      <b-form-input class="search" list="my-list-id" placeholder="typeing..."></b-form-input>
+      <b-form-input
+        v-model="search"
+        class="search"
+        list="my-list-id"
+        placeholder="typeing..."
+      ></b-form-input>
       <datalist id="my-list-id">
-        <option :key="index" v-for="(size,index) in sizes">{{ size }}</option>
+        <option :key="index" v-for="(result, index) in results">
+          {{ result.name }}
+        </option>
       </datalist>
-      <b-button variant="primary" @click="$router.push('/topic/1')"
-        >Search</b-button
-      >
+      <b-button @click="openResults()" variant="primary">Search</b-button>
     </div>
   </div>
 </template>
 <script>
-  export default {
-    data() {
-      return {
-        sizes: [
-          'Topic 1 > Sub Topic 11',
-          'Topic 2 > Sub Topic 22 > Subject 222',
-          'Testing > DEV > SQA',
-          ]
+import axios from "axios";
+
+export default {
+  data() {
+    return {
+      results: [],
+      search: "",
+    };
+  },
+  watch: {
+    search(value) {
+      if (value) {
+        this.searchTopicList();
       }
+    },
+  },
+  mounted(){
+    // this.searchTopicList()
+  },
+  methods: {
+    searchTopicList() {
+      axios.get(`/topics/?search=${this.search}`).then((res) => {
+        this.results = res.data;
+      });
+    },
+    openResults(){
+      console.log(this.results)
     }
-  }
+  },
+};
 </script>
 <style lang="scss" scoped>
 .banner {

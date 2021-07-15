@@ -22,6 +22,7 @@
         <div class="col-md-3">
           <div class="float-right">
             <b-card
+              v-if="isLoggedIn"
               v-b-modal.modal-1
               class="cursor-pointer addTopic"
               title="Add Topic"
@@ -48,9 +49,10 @@
             </VueSlickCarousel>
             <div class="">
               <b-card
-                v-b-modal.modal-1
+                v-if="isLoggedIn"
+                v-b-modal.modal-2
                 class="addTopic addSubTopic"
-                title="Add Topic"
+                title="Add"
               >
               </b-card>
             </div>
@@ -66,9 +68,12 @@
               </b-breadcrumb>
             </div>
             <div class="sub-topic-content">
-              <template v-for="(item, index) in subTopicContent">
+              <!-- explainations go here -->
+              <template
+                v-for="(item, index) in topicList[activeIndex].explanations"
+              >
                 <b-card class="mb-5" :title="item.title" :key="index">
-                  <b-card-text class="text">{{ item.content }}</b-card-text>
+                  <b-card-text class="text">{{ item.type }}</b-card-text>
                   <b-card-text>
                     <div
                       class="d-flex justify-content-between align-items-center"
@@ -192,23 +197,53 @@
         >
           Private
         </b-form-checkbox>
-        <b-button class="mt-3" block variant="success" @click="saveTopic()"
+        <b-button class="mt-3" block variant="primary" @click="saveTopic()"
           >Save</b-button
         >
       </div>
     </b-modal>
-    <b-modal id="modal-2" title="Create Sub Topic">
+    <b-modal
+      id="modal-2"
+      ref="createExplanationsModal"
+      title="Create Sub Topic"
+    >
       <div>
         <div>
           <b-form-group id="fieldset-1" label="Enter Title">
             <b-form-input
               id="input-1"
-              v-model="subtopic.title"
+              v-model="explanations.title"
               trim
             ></b-form-input>
           </b-form-group>
         </div>
-        <b-button variant="success" @click="saveTopic()">Save</b-button>
+        <div>
+          <b-form-group id="fieldset-1" label="Enter Type">
+            <b-form-input
+              id="input-1"
+              v-model="explanations.type"
+              trim
+            ></b-form-input>
+          </b-form-group>
+        </div>
+        <div>
+          <b-form-group id="fieldset-1" label="Parent">
+            <b-form-select v-model="explanations.topic">
+              <template #first>
+                <b-form-select-option :value="null" disabled
+                  >-- Parent --</b-form-select-option
+                >
+              </template>
+              <b-form-select-option
+                :key="index"
+                v-for="(type, index) in topicList"
+                :value="type.id"
+                >{{ type.name }}</b-form-select-option
+              >
+            </b-form-select>
+          </b-form-group>
+        </div>
+        <b-button variant="primary" @click="saveExplanations()">Save</b-button>
       </div>
     </b-modal>
   </div>
@@ -234,11 +269,10 @@ export default {
         parent: null,
         private: false,
       },
-      subtopic: {
-        name: "",
-        type: null,
-        parent: null,
-        private: false,
+      explanations: {
+        title: "",
+        type: "",
+        topic: null,
       },
       typeList: [
         { label: "Diary", value: "diary" },
@@ -274,6 +308,9 @@ Ipsum has been the industry's standard dummy text ever since the 1500s, text whe
     };
   },
   computed: {
+    isLoggedIn() {
+      return this.$store.state.isUserLoggedIn;
+    },
     isMobile() {
       return window.screen.width < 768;
     },
@@ -291,13 +328,13 @@ Ipsum has been the industry's standard dummy text ever since the 1500s, text whe
         slidesToScroll: 1,
       };
     },
-    subTopicList(){
-      if(this.topicList[this.activeIndex]){
-        return this.topicList[this.activeIndex]?.subtopics
-      }else{
-        return []
+    subTopicList() {
+      if (this.topicList[this.activeIndex]) {
+        return this.topicList[this.activeIndex]?.subtopics;
+      } else {
+        return [];
       }
-    }
+    },
   },
   mounted() {
     this.getTopicList();
@@ -315,10 +352,16 @@ Ipsum has been the industry's standard dummy text ever since the 1500s, text whe
         this.getTopicList();
       });
     },
-    changeIndex(index){
-      debugger
-      this.activeIndex=index
-    }
+    saveExplanations() {
+      axios.post("/explanations/", this.explanations).then(() => {
+        this.$refs["createExplanationsModal"].hide();
+        this.getTopicList();
+      });
+    },
+    changeIndex(index) {
+      debugger;
+      this.activeIndex = index;
+    },
   },
 };
 </script>

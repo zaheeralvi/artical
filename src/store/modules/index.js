@@ -1,6 +1,8 @@
 /**
  * Automatically imports all the modules and exports as a single module object
  */
+
+/*
 const requireModule = require.context('.', true, /\.store\.js$/)
 const modules = {}
 
@@ -14,3 +16,10 @@ requireModule.keys().forEach((filename) => {
 })
 
 export default modules
+
+
+*/
+
+import userStore from './user/user.store';
+
+export default {userStore}
